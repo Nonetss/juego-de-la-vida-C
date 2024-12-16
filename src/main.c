@@ -1,21 +1,31 @@
-#include <SDL2/SDL.h>
-#include "tablero/tablero.h"
 #include "reglas/reglas.h"
 #include "tablero/nuevag.h"
+#include "tablero/tablero.h"
 #include "windous/sdl_handler.h"
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 int main() {
-    int filas = 30, columnas = 30, cellSize = 20;
+    int filas, columnas, cellSize = 20;
+
+    // Pedir al usuario las dimensiones del tablero
+    printf("Introduce el número de filas: ");
+    scanf("%d", &filas);
+
+    printf("Introduce el número de columnas: ");
+    scanf("%d", &columnas);
+
+    // Calcular el tamaño de la ventana
     int width = columnas * cellSize;
     int height = filas * cellSize;
 
     // Inicializar SDL
     SDL_Renderer *renderer;
     SDL_Window *window = initSDL(&renderer, width, height);
-    if (!window) return 1;
+    if (!window)
+        return 1;
 
     // Inicializar tablero
     srand(time(NULL));
