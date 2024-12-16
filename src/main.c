@@ -1,8 +1,10 @@
-#include "tablero/tablero.h"
 #include "reglas/reglas.h"
+#include "tablero/nuevag.h" // Incluye la función nuevaGeneración
+#include "tablero/tablero.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h> // Para sleep()
 
 int main() {
   // Dimensiones del tablero
@@ -12,7 +14,7 @@ int main() {
   // Inicializar la semilla para números aleatorios
   srand(time(NULL));
 
-  // Crear el tablero
+  // Crear el tablero inicial
   int **tablero = crearTablero(filas, columnas);
 
   // Inicializar el tablero con valores aleatorios
@@ -22,16 +24,30 @@ int main() {
   printf("Tablero inicial:\n");
   imprimirTablero(tablero, filas, columnas);
 
-  // Calcular los vecinos vivos para todas las posiciones
-  int **vecinos = calcularVecinos(tablero, filas, columnas);
+  // Bucle para continuar el juego mientras haya células vivas
+  while (hayCelulasVivas(tablero, filas, columnas)) {
+    // Calcular los vecinos vivos
+    int **vecinos = calcularVecinos(tablero, filas, columnas);
 
-  // Imprimir el tablero de vecinos vivos
-  printf("\nVecinos vivos por posición:\n");
-  imprimirTablero(vecinos, filas, columnas);
+    // Crear la nueva generación basada en el tablero y los vecinos vivos
+    int **nuevaGeneracionTablero =
+        nuevaGeneracion(tablero, vecinos, filas, columnas);
 
-  // Liberar memoria de ambas matrices
+    // Liberar el tablero actual y los vecinos
+    liberarTablero(tablero, filas);
+    liberarTablero(vecinos, filas);
+
+    // Actualizar el tablero con la nueva generación
+    tablero = nuevaGeneracionTablero;
+
+    // Imprimir la nueva generación
+    printf("\nNueva generación:\n");
+    imprimirTablero(tablero, filas, columnas);
+    sleep(1);
+  }
+
+  // Liberar la última generación
   liberarTablero(tablero, filas);
-  liberarTablero(vecinos, filas);
 
   return 0;
 }
