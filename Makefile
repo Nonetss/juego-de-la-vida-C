@@ -1,27 +1,22 @@
-# Nombre del ejecutable
-TARGET = juego
-
 # Archivos fuente
-SRCS = src/main.c src/tablero/tablero.c src/reglas/reglas.c src/tablero/nuevag.c
+SRCS = src/main.c src/tablero/tablero.c src/reglas/reglas.c src/tablero/nuevag.c src/windous/sdl_handler.c
 
-# Archivos objeto (se generan automáticamente)
+# Archivos objeto
 OBJS = $(SRCS:.c=.o)
 
-# Compilador y banderas
+# Compilación
 CC = gcc
-CFLAGS = -Wall -Wextra -g -I./src/tablero  -I./src/reglas
+CFLAGS = -Wall -Wextra -g -I./src -I/usr/include/SDL2
+LDFLAGS = -lSDL2
 
-# Regla principal: cómo construir el ejecutable
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+# Regla principal
+juego: $(OBJS)
+	$(CC) $(OBJS) -o juego $(LDFLAGS)
 
-# Regla para compilar los archivos .c a .o
+# Regla para compilar los archivos fuente a objetos
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Limpiar los archivos generados
+# Limpiar archivos generados
 clean:
-	rm -f $(OBJS) $(TARGET)
-
-# Regla para recompilar todo
-rebuild: clean $(TARGET)
+	rm -f $(OBJS) juego

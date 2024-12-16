@@ -1,53 +1,61 @@
-#include "reglas/reglas.h"
-#include "tablero/nuevag.h" // Incluye la función nuevaGeneración
+#include <SDL2/SDL.h>
 #include "tablero/tablero.h"
+#include "reglas/reglas.h"
+#include "tablero/nuevag.h"
+#include "windous/sdl_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h> // Para sleep()
 
 int main() {
-  // Dimensiones del tablero
-  int filas = 10;
-  int columnas = 10;
+    int filas = 30, columnas = 30, cellSize = 20;
+    int width = columnas * cellSize;
+    int height = filas * cellSize;
 
-  // Inicializar la semilla para números aleatorios
-  srand(time(NULL));
+    // Inicializar SDL
+    SDL_Renderer *renderer;
+    SDL_Window *window = initSDL(&renderer, width, height);
+    if (!window) return 1;
 
-  // Crear el tablero inicial
-  int **tablero = crearTablero(filas, columnas);
+    // Inicializar tablero
+    srand(time(NULL));
+    int **tablero = crearTablero(filas, columnas);
+    inicializarTablero(tablero, filas, columnas);
 
-  // Inicializar el tablero con valores aleatorios
-  inicializarTablero(tablero, filas, columnas);
+    int running = 1;
+    SDL_Event event;
 
-  // Imprimir el tablero inicial
-  printf("Tablero inicial:\n");
-  imprimirTablero(tablero, filas, columnas);
+    // Bucle principal
+    while (running) {
+        // Manejo de eventos
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            }
+        }
 
-  // Bucle para continuar el juego mientras haya células vivas
-  while (hayCelulasVivas(tablero, filas, columnas)) {
-    // Calcular los vecinos vivos
-    int **vecinos = calcularVecinos(tablero, filas, columnas);
+        // Renderizar tablero
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Fondo blanco
+        SDL_RenderClear(renderer);
+        renderTablero(renderer, tablero, filas, columnas, cellSize);
+        SDL_RenderPresent(renderer);
 
-    // Crear la nueva generación basada en el tablero y los vecinos vivos
-    int **nuevaGeneracionTablero =
-        nuevaGeneracion(tablero, vecinos, filas, columnas);
+        // Calcular nueva generación
+        int **vecinos = calcularVecinos(tablero, filas, columnas);
+        int **nuevaGen = nuevaGeneracion(tablero, vecinos, filas, columnas);
+        liberarTablero(tablero, filas);
+        liberarTablero(vecinos, filas);
+        tablero = nuevaGen;
 
-    // Liberar el tablero actual y los vecinos
+        // Esperar 100ms (10 fps)
+        SDL_Delay(100);
+    }
+
+    // Liberar recursos
     liberarTablero(tablero, filas);
-    liberarTablero(vecinos, filas);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
-    // Actualizar el tablero con la nueva generación
-    tablero = nuevaGeneracionTablero;
-
-    // Imprimir la nueva generación
-    printf("\nNueva generación:\n");
-    imprimirTablero(tablero, filas, columnas);
-    sleep(1);
-  }
-
-  // Liberar la última generación
-  liberarTablero(tablero, filas);
-
-  return 0;
+    return 0;
 }
